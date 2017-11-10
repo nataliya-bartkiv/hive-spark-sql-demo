@@ -1,13 +1,14 @@
 package com.eleks.nataliya.bartkiv
 
 import java.sql.Timestamp
+import java.io._
 
 object Generator {
     val maxValue = 1000
     val initData : Data = Data(
         id = 1,
         value = nextValue(maxValue),
-        timestamp = new Timestamp(System.nanoTime()),
+        datetime = new Timestamp(System.nanoTime()),
         longitude = 23.998301,
         latitude = 49.803899
     )
@@ -17,7 +18,7 @@ object Generator {
     def nextData() : Data = {
         val id = currentData.id + 1
         val value = nextValue(maxValue)
-        val timestamp = new Timestamp(System.nanoTime())
+        val timestamp = new Timestamp(System.currentTimeMillis())
         val longitude = nextCoordinate(currentData.longitude)
         val latitude = nextCoordinate(currentData.latitude)
 
@@ -33,5 +34,17 @@ object Generator {
 
     private def nextValue(max : Int) : Double = {
         Math.random() * max
+    }
+
+    def nextFile(path : String, recordsCount : Int, delimiter : String): Unit = {
+        val file = new File(path)
+        val writer = new BufferedWriter(new FileWriter(file))
+
+        for(_ <- 0 until recordsCount) {
+            val data = nextData()
+            val dataString = data.productIterator.mkString(delimiter) + "\n"
+            writer.write(dataString)
+        }
+        writer.close()
     }
 }
