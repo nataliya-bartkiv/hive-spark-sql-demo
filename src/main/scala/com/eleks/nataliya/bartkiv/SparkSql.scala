@@ -1,10 +1,12 @@
 package com.eleks.nataliya.bartkiv
-
+import org.apache.spark.sql.Encoders
 import java.io._
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+
+import scala.tools.cmd.Spec.Accumulator
 
 class SparkSql(spark : SparkSession) {
     def createDatabase(name : String): Unit = {
@@ -69,4 +71,18 @@ class SparkSql(spark : SparkSession) {
 
         spark.sql(query)
     }
+
+    def read(database : String, table : String) : DataFrame = {
+        val query = s"SELECT * FROM $database.$table"
+        spark.sql(query)
+    }
+
+    def readAsDataset[T](database : String, table : String, dataType : Class[T]) : Dataset[T] = {
+        val dataFrame = read(database, table)
+        val dataEncoder = Encoders.bean(dataType)
+        dataFrame.as[T](dataEncoder)
+    }
+
+    
+
 }
