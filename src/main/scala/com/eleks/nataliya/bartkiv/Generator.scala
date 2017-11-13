@@ -18,6 +18,7 @@ object Generator {
     def nextData() : Data = {
         val id = currentData.id + 1
         val value = nextValue(maxValue)
+        //TODO: Generate random but correct timestamp (each file - one month)
         val timestamp = new Timestamp(System.currentTimeMillis())
         val longitude = nextCoordinate(currentData.longitude)
         val latitude = nextCoordinate(currentData.latitude)
@@ -26,10 +27,10 @@ object Generator {
         currentData
     }
 
-    private def nextCoordinate(previous : BigDecimal) : BigDecimal = {
+    private def nextCoordinate(previous : Double) : Double = {
         val offset = Math.random() / 100
         val current = previous + offset
-        current.bigDecimal.setScale(6, BigDecimal.RoundingMode.HALF_UP)
+        BigDecimal.apply(current).setScale(6, BigDecimal.RoundingMode.HALF_UP).toDouble
     }
 
     private def nextValue(max : Int) : Double = {

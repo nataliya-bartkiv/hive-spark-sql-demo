@@ -1,8 +1,12 @@
 package com.eleks.nataliya.bartkiv
 
+import java.io._
+import java.text.SimpleDateFormat
+import java.util.Calendar
+
 import org.apache.spark.sql.SparkSession
 
-class SparkSqlHelper(spark : SparkSession) {
+class SparkSql(spark : SparkSession) {
     def createDatabase(name : String): Unit = {
         val query = s"CREATE DATABASE IF NOT EXISTS ${name} "
         spark.sql(query)
@@ -21,10 +25,32 @@ class SparkSqlHelper(spark : SparkSession) {
         spark.sql(query)
     }
 
+    def loadDataLocal(tableName : String, filePath : String): Unit = {
+        val file = new File(filePath)
+        val bufferedReader = new BufferedReader(new FileReader(file))
+        val line: String = bufferedReader.readLine()
+        val fields = line.split('|')
+        val timestampIndex = 2
+
+        //TODO : Put extracting month into separate function
+        val calendar = Calendar.getInstance()
+        val dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS")
+        val date = dateFormat.parse(fields(timestampIndex))
+        calendar.setTime(date)
+        val month = calendar.get(Calendar.MONTH) + 1
+
+        //TODO : Generalize loading somehow
+        val query = s"LOAD DATA LOCAL INPATH '${filePath}' " +
+            s"INTO TABLE ${tableName} " +
+            s"PARTITION(month='${month}')"
+
+        spark.sql(query)
+        bufferedReader.close()
+    }
+
     def createTable[T](tableName : String, dataType : Class[T], delimiter : String, compression : String) : Unit = {
         val fields = new StringBuilder
 
-        //TODO : Convert BigDecimal to decimal somehow
         for(field <- dataType.getDeclaredFields) {
             val fieldType = field.getType.getSimpleName
             val fieldName = field.getName
@@ -32,7 +58,7 @@ class SparkSqlHelper(spark : SparkSession) {
         }
         fields.deleteCharAt(fields.lastIndexOf(","))
 
-
+        //TODO: Generalize creating partitions somehow
         val query = s"""CREATE TABLE IF NOT EXISTS $tableName
             (${fields.toString()})
             PARTITIONED BY (month INT)
@@ -41,6 +67,6 @@ class SparkSqlHelper(spark : SparkSession) {
             STORED AS TEXTFILE
             TBLPROPERTIES('orc.compress'='${compression}')"""
 
-        println(query)
+        spark.sql(query)
     }
 }
