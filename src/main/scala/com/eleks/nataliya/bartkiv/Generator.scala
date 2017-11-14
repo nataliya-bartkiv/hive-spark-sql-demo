@@ -3,10 +3,13 @@ package com.eleks.nataliya.bartkiv
 import java.sql.Timestamp
 import java.io._
 
+import scala.util.Random
+
 object Generator {
-    val maxValue = 1000
+    val maxValue = 20
+    val maxId = 1000
     val initData : Data = Data(
-        id = 1,
+        id = Random.nextInt(maxValue),
         value = nextValue(maxValue),
         datetime = new Timestamp(System.nanoTime()),
         longitude = 23.998301,
@@ -16,7 +19,7 @@ object Generator {
     var currentData : Data = initData
 
     def nextData() : Data = {
-        val id = currentData.id + 1
+        val id = Random.nextInt(maxValue)
         val value = nextValue(maxValue)
         //TODO: Generate random but correct timestamp (each file - one month)
         val timestamp = new Timestamp(System.currentTimeMillis())

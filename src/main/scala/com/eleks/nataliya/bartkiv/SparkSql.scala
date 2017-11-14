@@ -6,8 +6,6 @@ import java.util.Calendar
 
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-import scala.tools.cmd.Spec.Accumulator
-
 class SparkSql(spark : SparkSession) {
     def createDatabase(name : String): Unit = {
         val query = s"CREATE DATABASE IF NOT EXISTS ${name} "
@@ -82,7 +80,4 @@ class SparkSql(spark : SparkSession) {
         val dataEncoder = Encoders.bean(dataType)
         dataFrame.as[T](dataEncoder)
     }
-
-    
-
 }
