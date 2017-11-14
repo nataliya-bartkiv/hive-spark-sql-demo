@@ -1,12 +1,9 @@
 package com.eleks.nataliya.bartkiv
 import org.apache.spark.sql.Encoders
-import java.io._
-import java.text.SimpleDateFormat
-import java.util.Calendar
 
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-class SparkSql(spark : SparkSession) {
+class GeneralSparkSql(spark : SparkSession) {
     def createDatabase(name : String): Unit = {
         val query = s"CREATE DATABASE IF NOT EXISTS ${name} "
         spark.sql(query)
@@ -25,30 +22,7 @@ class SparkSql(spark : SparkSession) {
         spark.sql(query)
     }
 
-    def loadDataLocal(tableName : String, filePath : String): Unit = {
-        val file = new File(filePath)
-        val bufferedReader = new BufferedReader(new FileReader(file))
-        val line: String = bufferedReader.readLine()
-        val fields = line.split('|')
-        val timestampIndex = 2
-
-        //TODO : Put extracting month into separate function
-        val calendar = Calendar.getInstance()
-        val dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS")
-        val date = dateFormat.parse(fields(timestampIndex))
-        calendar.setTime(date)
-        val month = calendar.get(Calendar.MONTH) + 1
-
-        //TODO : Generalize loading somehow
-        val query = s"LOAD DATA LOCAL INPATH '${filePath}' " +
-            s"INTO TABLE ${tableName} " +
-            s"PARTITION(month='${month}')"
-
-        spark.sql(query)
-        bufferedReader.close()
-    }
-
-    def createTable[T](tableName : String, dataType : Class[T], delimiter : String, compression : String) : Unit = {
+    def createTable[T](tableName : String, delimiter : String, compression : String, dataType : Class[T]) : Unit = {
         val fields = new StringBuilder
 
         for(field <- dataType.getDeclaredFields) {
@@ -58,10 +32,8 @@ class SparkSql(spark : SparkSession) {
         }
         fields.deleteCharAt(fields.lastIndexOf(","))
 
-        //TODO: Generalize creating partitions somehow
         val query = s"""CREATE TABLE IF NOT EXISTS $tableName
             (${fields.toString()})
-            PARTITIONED BY (month INT)
             ROW FORMAT DELIMITED
             FIELDS TERMINATED BY '${delimiter}'
             STORED AS TEXTFILE
@@ -79,5 +51,9 @@ class SparkSql(spark : SparkSession) {
         val dataFrame = read(database, table)
         val dataEncoder = Encoders.bean(dataType)
         dataFrame.as[T](dataEncoder)
+    }
+
+    def saveAsTable(inputDF : DataFrame, tablename : String) : Unit = {
+        inputDF.write.saveAsTable(tablename)
     }
 }

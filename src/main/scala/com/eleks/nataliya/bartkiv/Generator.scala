@@ -6,9 +6,9 @@ import java.io._
 import scala.util.Random
 
 object Generator {
-    val maxValue = 20
-    val maxId = 1000
-    val initData : Data = Data(
+    val maxValue = 1000
+    val maxId = 100
+    val initData : Location = Location(
         id = Random.nextInt(maxValue),
         value = nextValue(maxValue),
         datetime = new Timestamp(System.nanoTime()),
@@ -16,17 +16,17 @@ object Generator {
         latitude = 49.803899
     )
 
-    var currentData : Data = initData
+    var currentData : Location = initData
 
-    def nextData() : Data = {
-        val id = Random.nextInt(maxValue)
+    def nextData() : Location = {
+        val id = Random.nextInt(maxId)
         val value = nextValue(maxValue)
         //TODO: Generate random but correct timestamp (each file - one month)
         val timestamp = new Timestamp(System.currentTimeMillis())
         val longitude = nextCoordinate(currentData.longitude)
         val latitude = nextCoordinate(currentData.latitude)
 
-        currentData = Data(id, value, timestamp, latitude, longitude)
+        currentData = Location(id, value, timestamp, latitude, longitude)
         currentData
     }
 

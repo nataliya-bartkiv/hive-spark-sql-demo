@@ -10,23 +10,28 @@ object Main {
         val hivePropsPath = "config/hive.properties"
 
         val databaseName = "general"
-        val tableName = "data"
+        val tableName = "path"
         val compressionType = "snappy"
         val delimiter = "|"
-        val recordsInFile = 1000
-        val filesCount = 1
 
         //Create spark session
         val sparkSession = SparkSessionManager.getSession(appName, master, hivePropsPath)
-        val sparkSql = new SparkSql(sparkSession)
+        val sparkSqlHelper = new GeneralSparkSql(sparkSession)
+        val helper = new LogisticsHelper(sparkSession)
 
-//        //Generate a few files with mock data
-//        for(i <- 0 until filesCount) {
-//            val path = s"mock_data/${i}.txt"
-//            Generator.nextFile(path, recordsInFile, delimiter)
-//        }
+        //Generate file with mock data
+        val path = "mock_data/large.txt"
+        val recordsInFile = 1000
+        Generator.nextFile(path, recordsInFile, delimiter)
 
+        //Aggregate file to Path
+        val inputDF = helper.readCoordinatesFile(path, delimiter)
+        val aggregatedDF = helper.createPathDataFrame(inputDF)
 
-        new DataAggregator(sparkSession).getPathLength
+        //Save aggregations to Hive table
+        sparkSqlHelper.createDatabase(databaseName)
+        sparkSqlHelper.useDatabase(databaseName)
+        helper.createPathTable(tableName, delimiter)
+        helper.saveAsTable(aggregatedDF, tableName)
     }
 }
