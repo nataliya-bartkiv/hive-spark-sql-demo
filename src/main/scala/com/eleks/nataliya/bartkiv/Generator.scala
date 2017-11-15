@@ -7,7 +7,7 @@ import scala.util.Random
 
 object Generator {
     val maxValue = 1000
-    val maxId = 100
+    val maxId = 1000
     val initData : Location = Location(
         id = Random.nextInt(maxValue),
         value = nextValue(maxValue),
@@ -21,7 +21,7 @@ object Generator {
     def nextData() : Location = {
         val id = Random.nextInt(maxId)
         val value = nextValue(maxValue)
-        //TODO: Generate random but correct timestamp (each file - one month)
+        //TODO: Generate random but correct timestamp
         val timestamp = new Timestamp(System.currentTimeMillis())
         val longitude = nextCoordinate(currentData.longitude)
         val latitude = nextCoordinate(currentData.latitude)

@@ -18,7 +18,8 @@ class LogisticsHelper(spark : SparkSession) {
         val window = Window.partitionBy(idCol, yearCol, monthCol).orderBy(datetimeCol)
         val nextLatitudeCol : Column = lead(latitudeCol, 1) over window
         val nextLongitudeCol : Column = lead(longitudeCol, 1) over window
-        val subdistanceCol : Column = sqrt(pow(latitudeCol - nextLatitudeCol, 2) + pow(longitudeCol - nextLongitudeCol, 2))
+        val subdistanceCol : Column = distanceInMeters(latitudeCol, longitudeCol, nextLatitudeCol, nextLongitudeCol)
+        //val subdistanceCol : Column = sqrt(pow(latitudeCol - nextLatitudeCol, 2) + pow(longitudeCol - nextLongitudeCol, 2))
 
         val extendedDF = inputDF.withColumn("nextLatitude", nextLatitudeCol)
             .withColumn("nextLongitude", nextLongitudeCol)
@@ -57,5 +58,20 @@ class LogisticsHelper(spark : SparkSession) {
 
     def saveAsTable(inputDF : DataFrame, tablename : String) : Unit = {
         inputDF.write.insertInto(tablename)
+    }
+
+    def distanceInMeters(long1 : Column, lat1 : Column, long2 : Column, lat2 : Column) : Column = {
+        import org.apache.spark.sql.functions._
+
+        val r = 6371    // Earth radius in kilometers
+        val phi1 = radians(lat1)
+        val phi2 = radians(lat2)
+
+        val deltaPhi = radians(lat2 - lat1)
+        val deltaLambda = radians(long2 - long1)
+
+        val a = pow(sin(deltaPhi / 2), 2) + cos(phi1) * cos(phi2) * pow(sin(deltaLambda / 2), 2)
+        val c = atan2(sqrt(a), sqrt((a - 1) * -1)) * 2
+        c * r
     }
 }

@@ -21,7 +21,7 @@ object Main {
 
         //Generate file with mock data
         val path = "mock_data/large.txt"
-        val recordsInFile = 1000
+        val recordsInFile = 15000
         Generator.nextFile(path, recordsInFile, delimiter)
 
         //Aggregate file to Path
