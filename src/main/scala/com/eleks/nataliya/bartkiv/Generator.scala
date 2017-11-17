@@ -49,6 +49,25 @@ object Generator {
             val dataString = data.productIterator.mkString(delimiter) + "\n"
             writer.write(dataString)
         }
+        writer.newLine()
         writer.close()
+    }
+
+    def displayNextLine(delimiter : String): Unit = {
+        val data = nextData()
+        val dataString = data.productIterator.mkString(delimiter)
+        println(dataString)
+    }
+
+    def main(args : Array[String]) : Unit = {
+        val delimiter = "|"
+
+        val recordsInFile = 1000
+        val filesCount = 15
+
+        for(i <- 0 until filesCount) {
+            val path = s"mock_data/file_${i}_${System.currentTimeMillis()}.txt"
+            Generator.nextFile(path, recordsInFile, delimiter)
+        }
     }
 }

@@ -8,7 +8,8 @@ object Main {
         val appName = "Spark SQL Hive App"
         val master = "local[*]"
         val hivePropsPath = "config/hive.properties"
-
+        //val hdfsPath = "hdfs://localhost:9001/user/coordinates_data"
+        val hdfsPath = "hdfs://localhost:9001/user/avro_coordinates/"
         val databaseName = "general"
         val tableName = "path"
         val compressionType = "snappy"
@@ -19,13 +20,10 @@ object Main {
         val sparkSqlHelper = new GeneralSparkSql(sparkSession)
         val helper = new LogisticsHelper(sparkSession)
 
-        //Generate file with mock data
-        val path = "mock_data/large.txt"
-        val recordsInFile = 15000
-        Generator.nextFile(path, recordsInFile, delimiter)
+
 
         //Aggregate file to Path
-        val inputDF = helper.readCoordinatesFile(path, delimiter)
+        val inputDF = helper.readCoordinatesFile(hdfsPath, delimiter)
         val aggregatedDF = helper.createPathDataFrame(inputDF)
 
         //Save aggregations to Hive table

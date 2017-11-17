@@ -57,7 +57,8 @@ class LogisticsHelper(spark : SparkSession) {
     }
 
     def saveAsTable(inputDF : DataFrame, tablename : String) : Unit = {
-        inputDF.write.insertInto(tablename)
+        inputDF.show()
+        inputDF.coalesce(10).write.insertInto(tablename)
     }
 
     def distanceInMeters(long1 : Column, lat1 : Column, long2 : Column, lat2 : Column) : Column = {
